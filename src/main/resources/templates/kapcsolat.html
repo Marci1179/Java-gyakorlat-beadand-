@@ -15,6 +15,23 @@
         .f1-nav li a:hover { color: #e10600; }
         header { background-color: #2b2b2b; padding: 80px 0; text-align: center; }
         h1 { font-size: 4rem; font-weight: 800; text-transform: uppercase; }
+
+        .contact-wrapper {
+            max-width: 700px;
+            margin: 40px auto 60px auto;
+        }
+
+        .contact-card {
+            background-color: #2b2b2b;
+            border: 1px solid #e10600;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .form-label {
+            font-weight: 600;
+        }
     </style>
 </head>
 
@@ -35,6 +52,62 @@
 <header>
     <h1>Kapcsolat</h1>
 </header>
+
+<div class="container contact-wrapper">
+
+    <!-- Sikeres mentés üzenete -->
+    <div th:if="${successMessage}" class="alert alert-success text-center" role="alert"
+         th:text="${successMessage}">
+        Üzenet sikeresen elküldve.
+    </div>
+
+    <div class="contact-card">
+        <h2 class="mb-4">Írjon nekünk!</h2>
+
+        <form th:action="@{/kapcsolat}" th:object="${messageForm}" method="post" novalidate>
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Név</label>
+                <input type="text" id="name" class="form-control"
+                       th:field="*{name}"
+                       th:classappend="${#fields.hasErrors('name')} ? ' is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}"
+                     th:errors="*{name}">Hiba a név mezőben</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">E-mail cím</label>
+                <input type="email" id="email" class="form-control"
+                       th:field="*{email}"
+                       th:classappend="${#fields.hasErrors('email')} ? ' is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
+                     th:errors="*{email}">Hiba az e-mail mezőben</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="subject" class="form-label">Tárgy</label>
+                <input type="text" id="subject" class="form-control"
+                       th:field="*{subject}"
+                       th:classappend="${#fields.hasErrors('subject')} ? ' is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('subject')}"
+                     th:errors="*{subject}">Hiba a tárgy mezőben</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="text" class="form-label">Üzenet</label>
+                <textarea id="text" rows="5" class="form-control"
+                          th:field="*{text}"
+                          th:classappend="${#fields.hasErrors('text')} ? ' is-invalid'"></textarea>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('text')}"
+                     th:errors="*{text}">Hiba az üzenet mezőben</div>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-danger px-4">Üzenet küldése</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 </body>
 </html>
