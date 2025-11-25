@@ -15,6 +15,23 @@
         .f1-nav li a:hover { color: #e10600; }
         header { background-color: #2b2b2b; padding: 80px 0; text-align: center; }
         h1 { font-size: 4rem; font-weight: 800; text-transform: uppercase; }
+
+        .content-wrapper {
+            max-width: 1100px;
+            margin: 40px auto 60px auto;
+        }
+
+        .card-dark {
+            background-color: #2b2b2b;
+            border: 1px solid #e10600;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 0 25px rgba(0,0,0,0.6);
+        }
+
+        table thead {
+            background-color: #111;
+        }
     </style>
 </head>
 
@@ -35,6 +52,46 @@
 <header>
     <h1>Üzenetek</h1>
 </header>
+
+<div class="container content-wrapper">
+    <div class="card-dark">
+        <h2 class="mb-4">Beérkezett üzenetek</h2>
+
+        <div th:if="${#lists.isEmpty(messages)}">
+            Jelenleg nincs megjeleníthető üzenet.
+        </div>
+
+        <div th:if="${!#lists.isEmpty(messages)}" class="table-responsive">
+            <table class="table table-dark table-striped align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Név</th>
+                    <th>E-mail</th>
+                    <th>Tárgy</th>
+                    <th>Üzenet</th>
+                    <th>Küldés ideje</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="msg : ${messages}">
+                    <td th:text="${msg.id}">1</td>
+                    <td th:text="${msg.name}">Teszt Név</td>
+                    <td th:text="${msg.email}">teszt@example.com</td>
+                    <td th:text="${msg.subject}">Tárgy</td>
+                    <td th:text="${msg.text}">Üzenet szövege...</td>
+                    <td th:text="${msg.createdAt != null ?
+                                 #temporals.format(msg.createdAt, 'yyyy-MM-dd HH:mm:ss') :
+                                 '-'}">
+                        2025-01-01 12:00:00
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
 
 </body>
 </html>

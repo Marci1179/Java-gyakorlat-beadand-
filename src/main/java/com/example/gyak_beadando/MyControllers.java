@@ -4,6 +4,7 @@ import com.example.gyak_beadando.model.Message;
 import com.example.gyak_beadando.repository.MessageRepository;
 import com.example.gyak_beadando.repository.ResultRepository;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -71,8 +72,12 @@ public class MyControllers {
         return "redirect:/kapcsolat";
     }
 
+    // --- Üzenetek lista ---
+
     @GetMapping("/uzenetek")
-    public String uzenetek() {
+    public String uzenetek(Model model) {
+        model.addAttribute("messages",
+                messageRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")));
         return "uzenetek";
     }
 
