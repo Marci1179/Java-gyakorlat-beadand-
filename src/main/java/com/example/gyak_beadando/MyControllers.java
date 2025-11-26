@@ -3,22 +3,29 @@ package com.example.gyak_beadando;
 import com.example.gyak_beadando.model.Message;
 import com.example.gyak_beadando.model.Result;
 import com.example.gyak_beadando.model.Pilot;
+import com.example.gyak_beadando.model.User;
 import com.example.gyak_beadando.repository.MessageRepository;
 import com.example.gyak_beadando.repository.ResultRepository;
 import com.example.gyak_beadando.repository.PilotRepository;
+import com.example.gyak_beadando.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -27,13 +34,17 @@ public class MyControllers {
     private final ResultRepository resultRepository;
     private final MessageRepository messageRepository;
     private final PilotRepository pilotRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public MyControllers(ResultRepository resultRepository,
                          MessageRepository messageRepository,
-                         PilotRepository pilotRepository) {
+                         PilotRepository pilotRepository,
+                         UserRepository userRepository) {
         this.resultRepository = resultRepository;
         this.messageRepository = messageRepository;
         this.pilotRepository = pilotRepository;
+        this.userRepository = userRepository;
     }
 
     // --- Főoldal ---
@@ -85,10 +96,20 @@ public class MyControllers {
         return "redirect:/kapcsolat";
     }
 
-    // --- Üzenetek menü ---
+    // --- Üzenetek menü (csak bejelentkezve) ---
 
     @GetMapping("/uzenetek")
-    public String uzenetek(Model model) {
+    public String uzenetek(Model model,
+                           HttpSession session,
+                           RedirectAttributes redirectAttributes) {
+
+        if (session.getAttribute("loggedInUser") == null) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Az üzenetek megtekintéséhez be kell jelentkezned.");
+            return "redirect:/login";
+        }
+
         model.addAttribute("messages",
                 messageRepository.findAll(
                         Sort.by(Sort.Direction.DESC, "createdAt")));
@@ -169,7 +190,6 @@ public class MyControllers {
         return "redirect:/crud?sortField=" + sortField + "&sortDir=" + sortDir;
     }
 
-
     // Pilóta módosítása
     @PostMapping("/crud/update")
     public String updatePilot(@ModelAttribute Pilot pilot,
@@ -182,7 +202,6 @@ public class MyControllers {
 
         return "redirect:/crud?sortField=" + sortField + "&sortDir=" + sortDir;
     }
-
 
     // Pilóta törlése
     @PostMapping("/crud/delete/{id}")
@@ -251,5 +270,88 @@ public class MyControllers {
 
         pilotRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // --- REGISZTRÁCIÓ ---
+
+    @GetMapping("/register")
+    public String showRegisterForm(Model model) {
+        model.addAttribute("userForm", new User());
+        return "register";
+    }
+
+    @PostMapping("/register")
+    public String handleRegister(@ModelAttribute("userForm") User userForm,
+                                 RedirectAttributes redirectAttributes) {
+
+        if (userRepository.existsByEmail(userForm.getEmail())) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Ezzel az e-mail címmel már létezik felhasználó.");
+            return "redirect:/register";
+        }
+
+        // jelszó hash-elése
+        userForm.setPassword(passwordEncoder.encode(userForm.getPassword()));
+
+        // alap szerepkör: regisztrált látogató
+        if (userForm.getRole() == null || userForm.getRole().isBlank()) {
+            userForm.setRole("user");
+        }
+
+        userForm.setCreatedAt(LocalDateTime.now());
+        userForm.setUpdatedAt(LocalDateTime.now());
+
+        userRepository.save(userForm);
+
+        redirectAttributes.addFlashAttribute(
+                "successMessage",
+                "Sikeres regisztráció, most már bejelentkezhetsz.");
+        return "redirect:/login";
+    }
+
+    // --- BEJELENTKEZÉS ---
+
+    @GetMapping("/login")
+    public String showLoginForm() {
+        return "login";
+    }
+
+    @PostMapping("/login")
+    public String handleLogin(@RequestParam String email,
+                              @RequestParam String password,
+                              HttpSession session,
+                              RedirectAttributes redirectAttributes) {
+
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty()
+                || !passwordEncoder.matches(password, optionalUser.get().getPassword())) {
+
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Hibás e-mail cím vagy jelszó.");
+            return "redirect:/login";
+        }
+
+        // sikeres bejelentkezés – elmentjük a session-be
+        session.setAttribute("loggedInUser", optionalUser.get());
+
+        redirectAttributes.addFlashAttribute(
+                "successMessage",
+                "Sikeres bejelentkezés.");
+        return "redirect:/fooldal";
+    }
+
+    // --- KIJELENTKEZÉS ---
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session,
+                         RedirectAttributes redirectAttributes) {
+        session.invalidate();
+        redirectAttributes.addFlashAttribute(
+                "successMessage",
+                "Sikeres kijelentkezés.");
+        return "redirect:/fooldal";
     }
 }

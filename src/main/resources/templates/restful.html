@@ -77,10 +77,25 @@
         <li><a th:href="@{/fooldal}">Főoldal</a></li>
         <li><a th:href="@{/adatbazis}">Adatbázis</a></li>
         <li><a th:href="@{/kapcsolat}">Kapcsolat</a></li>
-        <li><a th:href="@{/uzenetek}">Üzenetek</a></li>
         <li><a th:href="@{/diagram}">Diagram</a></li>
         <li><a th:href="@{/crud}">CRUD</a></li>
         <li><a th:href="@{/restful}">RESTful</a></li>
+
+        <!-- Üzenetek – csak bejelentkezve -->
+        <li th:if="${session.loggedInUser != null}">
+            <a th:href="@{/uzenetek}">Üzenetek</a>
+        </li>
+
+        <!-- Auth gombok -->
+        <li th:if="${session.loggedInUser == null}">
+            <a th:href="@{/login}">Bejelentkezés</a>
+        </li>
+        <li th:if="${session.loggedInUser == null}">
+            <a th:href="@{/register}">Regisztráció</a>
+        </li>
+        <li th:if="${session.loggedInUser != null}">
+            <a th:href="@{/logout}">Kijelentkezés</a>
+        </li>
     </ul>
 </nav>
 
