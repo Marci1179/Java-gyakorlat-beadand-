@@ -46,12 +46,15 @@
         <li><a th:href="@{/crud}">CRUD</a></li>
         <li><a th:href="@{/restful}">RESTful</a></li>
 
-        <!-- Üzenetek – csak bejelentkezve -->
         <li th:if="${session.loggedInUser != null}">
             <a th:href="@{/uzenetek}">Üzenetek</a>
         </li>
 
-        <!-- Auth gombok -->
+        <!-- ADMIN csak adminnak -->
+        <li th:if="${session.loggedInUser != null and session.loggedInUser.role == 'admin'}">
+            <a th:href="@{/admin}">Admin</a>
+        </li>
+
         <li th:if="${session.loggedInUser == null}">
             <a th:href="@{/login}">Bejelentkezés</a>
         </li>

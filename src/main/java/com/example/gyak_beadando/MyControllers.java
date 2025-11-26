@@ -354,4 +354,92 @@ public class MyControllers {
                 "Sikeres kijelentkezés.");
         return "redirect:/fooldal";
     }
+
+    // --- ADMIN MENÜ: csak admin felhasználónak ---
+
+    // Felhasználók listázása
+    @GetMapping("/admin")
+    public String adminPage(Model model,
+                            HttpSession session,
+                            RedirectAttributes redirectAttributes) {
+
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null || !"admin".equalsIgnoreCase(loggedIn.getRole())) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Az admin felület eléréséhez admin jogosultság szükséges.");
+            return "redirect:/fooldal";
+        }
+
+        model.addAttribute("users", userRepository.findAll());
+        return "admin";
+    }
+
+    // Felhasználó módosítása
+    @PostMapping("/admin/updateUser")
+    public String updateUser(@RequestParam Long id,
+                             @RequestParam String name,
+                             @RequestParam String email,
+                             @RequestParam String role,
+                             HttpSession session,
+                             RedirectAttributes redirectAttributes) {
+
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null || !"admin".equalsIgnoreCase(loggedIn.getRole())) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Nincs jogosultságod a művelethez.");
+            return "redirect:/fooldal";
+        }
+
+        Optional<User> optionalUser = userRepository.findById(id);
+        if (optionalUser.isEmpty()) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "A felhasználó nem található.");
+            return "redirect:/admin";
+        }
+
+        User user = optionalUser.get();
+        user.setName(name);
+        user.setEmail(email);
+        user.setRole(role);
+        user.setUpdatedAt(LocalDateTime.now());
+
+        userRepository.save(user);
+
+        redirectAttributes.addFlashAttribute(
+                "successMessage",
+                "Felhasználó adatai sikeresen frissítve.");
+        return "redirect:/admin";
+    }
+
+    // Felhasználó törlése
+    @PostMapping("/admin/deleteUser")
+    public String deleteUser(@RequestParam Long id,
+                             HttpSession session,
+                             RedirectAttributes redirectAttributes) {
+
+        User loggedIn = (User) session.getAttribute("loggedInUser");
+        if (loggedIn == null || !"admin".equalsIgnoreCase(loggedIn.getRole())) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Nincs jogosultságod a művelethez.");
+            return "redirect:/fooldal";
+        }
+
+        if (!userRepository.existsById(id)) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "A felhasználó nem található.");
+            return "redirect:/admin";
+        }
+
+        userRepository.deleteById(id);
+
+        redirectAttributes.addFlashAttribute(
+                "successMessage",
+                "Felhasználó sikeresen törölve.");
+        return "redirect:/admin";
+    }
 }

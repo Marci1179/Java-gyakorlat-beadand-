@@ -15,7 +15,7 @@
 </head>
 <body>
 
-<!-- ugyanaz a NAV, mint a főoldalon -->
+<!-- NAV -->
 <nav class="f1-navbar">
     <ul class="f1-nav">
         <li><a th:href="@{/fooldal}">Főoldal</a></li>
@@ -24,9 +24,16 @@
         <li><a th:href="@{/diagram}">Diagram</a></li>
         <li><a th:href="@{/crud}">CRUD</a></li>
         <li><a th:href="@{/restful}">RESTful</a></li>
+
         <li th:if="${session.loggedInUser != null}">
             <a th:href="@{/uzenetek}">Üzenetek</a>
         </li>
+
+        <!-- ADMIN csak adminnak -->
+        <li th:if="${session.loggedInUser != null and session.loggedInUser.role == 'admin'}">
+            <a th:href="@{/admin}">Admin</a>
+        </li>
+
         <li th:if="${session.loggedInUser == null}">
             <a th:href="@{/login}">Bejelentkezés</a>
         </li>
