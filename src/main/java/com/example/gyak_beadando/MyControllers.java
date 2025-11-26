@@ -8,6 +8,8 @@ import com.example.gyak_beadando.repository.ResultRepository;
 import com.example.gyak_beadando.repository.PilotRepository;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -195,10 +197,59 @@ public class MyControllers {
         return "redirect:/crud?sortField=" + sortField + "&sortDir=" + sortDir;
     }
 
-    // --- RESTful menü ---
+    // --- RESTful menü oldal (HTML) ---
 
     @GetMapping("/restful")
     public String restful() {
         return "restful";
+    }
+
+    // --- RESTful API: Pilóták JSON-ben ---
+
+    // Összes pilóta lekérdezése (GET /api/pilots)
+    @GetMapping("/api/pilots")
+    public ResponseEntity<List<Pilot>> getAllPilots() {
+        List<Pilot> pilots = pilotRepository.findAll();
+        return ResponseEntity.ok(pilots);
+    }
+
+    // Egy pilóta lekérdezése ID alapján (GET /api/pilots/{id})
+    @GetMapping("/api/pilots/{id}")
+    public ResponseEntity<Pilot> getPilotById(@PathVariable Long id) {
+        return pilotRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // Új pilóta létrehozása (POST /api/pilots)
+    @PostMapping("/api/pilots")
+    public ResponseEntity<Pilot> createPilot(@RequestBody Pilot pilot) {
+        Pilot saved = pilotRepository.save(pilot);
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+    }
+
+    // Pilóta módosítása (PUT /api/pilots/{id})
+    @PutMapping("/api/pilots/{id}")
+    public ResponseEntity<Pilot> updatePilotApi(@PathVariable Long id,
+                                                @RequestBody Pilot pilot) {
+        if (!pilotRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // biztosítjuk, hogy a kérésben kapott objektum az adott ID-t kapja
+        pilot.setId(id);
+        Pilot updated = pilotRepository.save(pilot);
+        return ResponseEntity.ok(updated);
+    }
+
+    // Pilóta törlése (DELETE /api/pilots/{id})
+    @DeleteMapping("/api/pilots/{id}")
+    public ResponseEntity<Void> deletePilotApi(@PathVariable Long id) {
+        if (!pilotRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        pilotRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

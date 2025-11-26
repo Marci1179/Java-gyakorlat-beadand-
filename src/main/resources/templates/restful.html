@@ -15,6 +15,58 @@
         .f1-nav li a:hover { color: #e10600; }
         header { background-color: #2b2b2b; padding: 80px 0; text-align: center; }
         h1 { font-size: 4rem; font-weight: 800; text-transform: uppercase; }
+
+        main { padding: 40px 0; }
+
+        /* Kódblokkok – sötét, piros kiemeléssel */
+        pre {
+            background-color: #222;
+            color: #eee;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #444;
+        }
+        code {
+            color: #e10600;   /* piros, mint az F1-es akcentus */
+            font-family: Consolas, "Courier New", monospace;
+        }
+
+        /* REST táblázat – saját, sötét design, nem bootstrap kék */
+        .rest-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .rest-table th,
+        .rest-table td {
+            padding: 0.75rem 1rem;
+            border: 1px solid #444;
+        }
+        .rest-table thead th {
+            background-color: #e10600;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .rest-table tbody tr:nth-child(odd) {
+            background-color: #1f1f1f;
+        }
+        .rest-table tbody tr:nth-child(even) {
+            background-color: #252525;
+        }
+        .rest-table tbody tr:hover {
+            background-color: #333;
+        }
+
+        /* Tartalmi linkek – piros, ne legyen kék */
+        .content a {
+            color: #e10600;
+            text-decoration: none;
+        }
+        .content a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -35,6 +87,90 @@
 <header>
     <h1>RESTful</h1>
 </header>
+
+<main class="container content">
+    <section class="mb-5">
+        <h2 class="h4 mb-3">Pilóták RESTful API-ja</h2>
+        <p>
+            Az alkalmazásban egy RESTful API készült a <strong>pilóta</strong> entitáshoz.
+            Az adatok JSON formátumban érhetők el az <code>/api/pilots</code> útvonal alatt.
+        </p>
+
+        <div class="table-responsive">
+            <table class="rest-table">
+                <thead>
+                <tr>
+                    <th>Módszer</th>
+                    <th>URL</th>
+                    <th>Leírás</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><code>GET</code></td>
+                    <td><code>/api/pilots</code></td>
+                    <td>Összes pilóta lekérdezése JSON formátumban.</td>
+                </tr>
+                <tr>
+                    <td><code>GET</code></td>
+                    <td><code>/api/pilots/{id}</code></td>
+                    <td>Egy konkrét pilóta lekérdezése azonosító alapján.</td>
+                </tr>
+                <tr>
+                    <td><code>POST</code></td>
+                    <td><code>/api/pilots</code></td>
+                    <td>Új pilóta létrehozása JSON törzzsel.</td>
+                </tr>
+                <tr>
+                    <td><code>PUT</code></td>
+                    <td><code>/api/pilots/{id}</code></td>
+                    <td>Meglévő pilóta módosítása.</td>
+                </tr>
+                <tr>
+                    <td><code>DELETE</code></td>
+                    <td><code>/api/pilots/{id}</code></td>
+                    <td>Meglévő pilóta törlése.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="mb-5">
+        <h2 class="h4 mb-3">Tesztelés cURL-lel</h2>
+        <p>Alap URL lokálisan: <code>http://localhost:8080</code></p>
+
+        <p class="mb-1">Összes pilóta lekérdezése:</p>
+        <pre><code>curl -X GET http://localhost:8080/api/pilots</code></pre>
+
+        <p class="mb-1">Egy pilóta lekérdezése ID alapján (pl. 1):</p>
+        <pre><code>curl -X GET http://localhost:8080/api/pilots/1</code></pre>
+
+        <p class="mb-1">Új pilóta létrehozása:</p>
+        <pre><code>curl -X POST http://localhost:8080/api/pilots ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"Teszt Pilóta\",\"team\":\"Ferrari\",\"gender\":\"F\",\"birthDate\":\"1990-01-01\",\"nationality\":\"magyar\",\"legacyId\":999}"</code></pre>
+
+        <p class="mb-1">Pilóta módosítása (pl. ID = 1):</p>
+        <pre><code>curl -X PUT http://localhost:8080/api/pilots/1 ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"Módosított Pilóta\",\"team\":\"Red Bull\",\"gender\":\"N\",\"birthDate\":\"1991-05-10\",\"nationality\":\"osztrák\",\"legacyId\":999}"</code></pre>
+
+        <p class="mb-1">Pilóta törlése (pl. ID = 1):</p>
+        <pre><code>curl -X DELETE http://localhost:8080/api/pilots/1</code></pre>
+    </section>
+
+    <section class="mb-5">
+        <h2 class="h4 mb-3">Tesztelés Postman-nel</h2>
+        <ol>
+            <li>Nyisd meg a Postman-t, és hozz létre egy új kérést.</li>
+            <li>Állítsd be a HTTP metódust (<code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>).</li>
+            <li>URL-nek add meg pl. <code>http://localhost:8080/api/pilots</code>.</li>
+            <li><strong>POST/PUT</strong> esetén a <em>Body</em> fülön válaszd a <em>raw</em> + <em>JSON</em>-t, és add meg a pilóta adatait JSON-ként (pl. ugyanazt, mint a fenti cURL példában).</li>
+            <li>Küldd el a kérést, és ellenőrizd a JSON választ.</li>
+        </ol>
+    </section>
+</main>
 
 </body>
 </html>
