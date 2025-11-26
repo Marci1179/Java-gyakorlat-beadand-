@@ -13,8 +13,53 @@
         .f1-nav { list-style: none; margin: 0; padding: 10px 0; display: flex; justify-content: center; gap: 24px; }
         .f1-nav li a { color: #ddd; text-decoration: none; font-weight: 600; }
         .f1-nav li a:hover { color: #e10600; }
-        header { background-color: #2b2b2b; padding: 80px 0; text-align: center; }
+        header { background-color: #2b2b2b; padding: 60px 0 40px; text-align: center; }
         h1 { font-size: 4rem; font-weight: 800; text-transform: uppercase; }
+        main { padding: 40px 15px 80px; }
+        .card-dark {
+            background-color: #222;
+            border-radius: 16px;
+            border: 1px solid #333;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+        }
+        .form-control, .form-select {
+            background-color: #1c1c1c;
+            border-color: #444;
+            color: #fff;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #1f1f1f;
+            border-color: #e10600;
+            box-shadow: 0 0 0 0.2rem rgba(225, 6, 0, 0.25);
+            color: #fff;
+        }
+        .btn-f1 {
+            background: linear-gradient(135deg, #e10600, #ff4b2b);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+        }
+        .btn-f1:hover { filter: brightness(1.05); color: #fff; }
+        .table-dark {
+            --bs-table-bg: #181818;
+            --bs-table-striped-bg: #222;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #252525;
+        }
+        .sortable-header a {
+            color: #fff;
+            text-decoration: none;
+            font-size: .85rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+        .sortable-header a:hover { color: #e10600; }
+        .badge-sort {
+            font-size: .65rem;
+            margin-left: 4px;
+        }
     </style>
 </head>
 
@@ -33,8 +78,254 @@
 </nav>
 
 <header>
-    <h1>CRUD</h1>
+    <h1>CRUD MENÜ</h1>
+    <p class="lead mb-0">Itt a Pilóta (f1_pilots) táblán végezhetsz CRUD műveleteket.</p>
 </header>
+
+<main class="container">
+
+    <div th:if="${successMessage}" class="alert alert-success mb-4" role="alert"
+         th:text="${successMessage}"></div>
+
+    <!-- Új pilóta felvitele -->
+    <div class="card-dark mb-4">
+        <h2 class="h5 mb-3">Új pilóta felvétele</h2>
+        <form id="add-pilot-form" th:action="@{/crud/add(sortField=${sortField}, sortDir=${sortDir})}" method="post" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label" for="name">Név *</label>
+                <input type="text" id="name" name="name" class="form-control" required>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label" for="gender">Nem (F/N) *</label>
+                <select id="gender" name="gender" class="form-select" required>
+                    <option value="" selected disabled>Válassz.</option>
+                    <option value="F">F</option>
+                    <option value="N">N</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label" for="birthDate">Születési dátum</label>
+                <input type="date" id="birthDate" name="birthDate" class="form-control">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label" for="nationality">Állampolgárság</label>
+                <input type="text" id="nationality" name="nationality" class="form-control">
+            </div>
+
+            <div class="col-md-1">
+                <label class="form-label" for="legacyId">legacy_id</label>
+                <input type="number" id="legacyId" name="legacyId" class="form-control" min="0">
+            </div>
+
+            <div class="col-12 text-end">
+                <button type="submit" class="btn btn-f1">Hozzáadás</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Pilóták táblázat -->
+    <div class="card-dark">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Pilóták listája</h2>
+            <small class="text-muted">Rendezéshez kattints az oszlopfejlécekre.</small>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-dark table-striped table-hover align-middle">
+                <thead>
+                <tr>
+                    <th class="sortable-header">
+                        <a th:href="@{/crud(sortField='id', sortDir=${sortField=='id' && sortDir=='asc' ? 'desc' : 'asc'})}">
+                            ID
+                            <span th:if="${sortField=='id'}"
+                                  class="badge bg-secondary badge-sort"
+                                  th:text="${sortDir=='asc' ? '▲' : '▼'}"></span>
+                        </a>
+                    </th>
+                    <th class="sortable-header">
+                        <a th:href="@{/crud(sortField='name', sortDir=${sortField=='name' && sortDir=='asc' ? 'desc' : 'asc'})}">
+                            Név
+                            <span th:if="${sortField=='name'}"
+                                  class="badge bg-secondary badge-sort"
+                                  th:text="${sortDir=='asc' ? '▲' : '▼'}"></span>
+                        </a>
+                    </th>
+                    <th class="sortable-header">
+                        <a th:href="@{/crud(sortField='gender', sortDir=${sortField=='gender' && sortDir=='asc' ? 'desc' : 'asc'})}">
+                            Nem
+                            <span th:if="${sortField=='gender'}"
+                                  class="badge bg-secondary badge-sort"
+                                  th:text="${sortDir=='asc' ? '▲' : '▼'}"></span>
+                        </a>
+                    </th>
+                    <th class="sortable-header">
+                        <a th:href="@{/crud(sortField='birthDate', sortDir=${sortField=='birthDate' && sortDir=='asc' ? 'desc' : 'asc'})}">
+                            Születési dátum
+                            <span th:if="${sortField=='birthDate'}"
+                                  class="badge bg-secondary badge-sort"
+                                  th:text="${sortDir=='asc' ? '▲' : '▼'}"></span>
+                        </a>
+                    </th>
+                    <th class="sortable-header">
+                        <a th:href="@{/crud(sortField='nationality', sortDir=${sortField=='nationality' && sortDir=='asc' ? 'desc' : 'asc'})}">
+                            Állampolgárság
+                            <span th:if="${sortField=='nationality'}"
+                                  class="badge bg-secondary badge-sort"
+                                  th:text="${sortDir=='asc' ? '▲' : '▼'}"></span>
+                        </a>
+                    </th>
+                    <th class="sortable-header">
+                        <a th:href="@{/crud(sortField='legacyId', sortDir=${sortField=='legacyId' && sortDir=='asc' ? 'desc' : 'asc'})}">
+                            legacy_id
+                            <span th:if="${sortField=='legacyId'}"
+                                  class="badge bg-secondary badge-sort"
+                                  th:text="${sortDir=='asc' ? '▲' : '▼'}"></span>
+                        </a>
+                    </th>
+                    <th>Műveletek</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="pilot : ${pilots}"
+                    th:attr="data-legacy-id=${pilot.legacyId}">
+                    <td th:text="${pilot.id}">1</td>
+                    <td th:text="${pilot.name}">Név</td>
+                    <td th:text="${pilot.gender}">F</td>
+                    <td th:text="${pilot.birthDate}">2000-01-01</td>
+                    <td th:text="${pilot.nationality}">magyar</td>
+                    <td th:text="${pilot.legacyId}">1</td>
+                    <td>
+                        <!-- Szerkesztés gomb (modal) -->
+                        <button type="button"
+                                class="btn btn-sm btn-outline-light me-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editModal"
+                                th:attr="data-id=${pilot.id},
+                                         data-name=${pilot.name},
+                                         data-gender=${pilot.gender},
+                                         data-birthdate=${pilot.birthDate},
+                                         data-nationality=${pilot.nationality},
+                                         data-legacyid=${pilot.legacyId}">
+                            Szerkesztés
+                        </button>
+
+                        <!-- Törlés gomb -->
+                        <form th:action="@{'/crud/delete/' + ${pilot.id}}" method="post" class="d-inline">
+                            <input type="hidden" name="sortField" th:value="${sortField}">
+                            <input type="hidden" name="sortDir" th:value="${sortDir}">
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Biztosan törlöd ezt a pilótát?');">
+                                Törlés
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<!-- Szerkesztés modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="editModalLabel">Pilóta szerkesztése</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <!-- rendezés paraméterek az URL-ben -->
+            <form th:action="@{/crud/update(sortField=${sortField}, sortDir=${sortDir})}" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="edit-id" name="id">
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="edit-name" class="form-label">Név *</label>
+                            <input type="text" class="form-control" id="edit-name" name="name" required>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="edit-gender" class="form-label">Nem (F/N) *</label>
+                            <select id="edit-gender" name="gender" class="form-select" required>
+                                <option value="F">F</option>
+                                <option value="N">N</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="edit-birthDate" class="form-label">Születési dátum</label>
+                            <input type="date" class="form-control" id="edit-birthDate" name="birthDate">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="edit-nationality" class="form-label">Állampolgárság</label>
+                            <input type="text" class="form-control" id="edit-nationality" name="nationality">
+                        </div>
+
+                        <div class="col-md-1">
+                            <label for="edit-legacyId" class="form-label">legacy_id</label>
+                            <input type="number" class="form-control" id="edit-legacyId" name="legacyId" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Mégse</button>
+                    <button type="submit" class="btn btn-f1">Mentés</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Modal előtöltése szerkesztéskor
+    const editModal = document.getElementById('editModal');
+
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+
+            document.getElementById('edit-id').value = button.getAttribute('data-id') || '';
+            document.getElementById('edit-name').value = button.getAttribute('data-name') || '';
+            document.getElementById('edit-gender').value = button.getAttribute('data-gender') || 'F';
+            document.getElementById('edit-birthDate').value = button.getAttribute('data-birthdate') || '';
+            document.getElementById('edit-nationality').value = button.getAttribute('data-nationality') || '';
+            document.getElementById('edit-legacyId').value = button.getAttribute('data-legacyid') || '';
+        });
+    }
+
+    // Hozzáadásnál kliens oldali ellenőrzés: legacy_id ne legyen duplikált
+    const addForm = document.getElementById('add-pilot-form');
+    const legacyInput = document.getElementById('legacyId');
+
+    if (addForm && legacyInput) {
+        addForm.addEventListener('submit', function (e) {
+            // előző egyedi hiba törlése
+            legacyInput.setCustomValidity('');
+
+            const value = legacyInput.value.trim();
+            if (value !== '') {
+                const rows = document.querySelectorAll('tr[data-legacy-id]');
+                for (const row of rows) {
+                    if (row.dataset.legacyId && row.dataset.legacyId === value) {
+                        e.preventDefault(); // ne küldje be az űrlapot
+                        legacyInput.setCustomValidity('Ez a legacy_id már létezik az adatbázisban.');
+                        legacyInput.reportValidity(); // ugyanaz a buborék, mint a kötelező mezőknél
+                        return;
+                    }
+                }
+            }
+        });
+    }
+</script>
 
 </body>
 </html>
